@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mapa Conceitual — Agent Stack</title>
+
+  <!-- Vis.js (vis-network) -->
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" />
+
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      color: #3c4043;
+    }
+
+    #map {
+      position: absolute;
+      inset: 0;
+    }
+
+    .toolbar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 10;
+      max-width: min(520px, calc(100% - 24px));
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(6px);
+    }
+
+    .toolbar h1 {
+      margin: 0 0 6px 0;
+      font-size: 14px;
+      font-weight: 650;
+      letter-spacing: 0.2px;
+    }
+
+    .toolbar p {
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.35;
+      color: #5f6368;
+    }
+
+    .toolbar code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+    }
+
+    .warning {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #8a6d3b;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="toolbar">
+    <h1>The Agent Stack: Interactive System Map</h1>
+    <p>
+      <b>Explore the 10 layers of agentic architecture.</b><br>
+      Drag nodes to organize your view. Double-click to release. Zoom to explore.
+    </p>
+    <div class="warning">
+      Note: this file loads <code>vis-network</code> from a CDN. If you open it offline, the graph may not render.
+
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <script type="text/javascript">
+    // --- Data (nodes & edges)
+    const nodes = new vis.DataSet([
+      {
+        "id": "agent_stack",
+        "label": "Agent Stack",
+        "title": "<b>Concept:</b> Agent Stack<br><i>Drag to position, double-click to release.</i>",
+        "size": 28
+      },
+      {
+        "id": "core_reframe",
+        "label": "Core reframe",
+        "title": "<b>Concept:</b> Core reframe<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "manages_thinking",
+        "label": "Agent manages\nthinking",
+        "title": "<b>Concept:</b> Agent manages\nthinking<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "key_question",
+        "label": "Key question",
+        "title": "<b>Concept:</b> Key question<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "stack_sentence",
+        "label": "Stack sentence\n(summary)",
+        "title": "<b>Concept:</b> Stack sentence\n(summary)<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "deterministic_control",
+        "label": "Deterministic control\narchitecture",
+        "title": "<b>Concept:</b> Deterministic control\narchitecture<br><i>Drag to position, double-click to release.</i>",
+        "size": 24
+      },
+      {
+        "id": "layer0",
+        "label": "Layer 0:\nSubstrate",
+        "title": "<b>Concept:</b> Layer 0:\nSubstrate<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer1",
+        "label": "Layer 1:\nModel",
+        "title": "<b>Concept:</b> Layer 1:\nModel<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer2",
+        "label": "Layer 2:\nPrompt",
+        "title": "<b>Concept:</b> Layer 2:\nPrompt<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer3",
+        "label": "Layer 3:\nContext",
+        "title": "<b>Concept:</b> Layer 3:\nContext<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer4",
+        "label": "Layer 4:\nTools",
+        "title": "<b>Concept:</b> Layer 4:\nTools<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer5",
+        "label": "Layer 5:\nAgent loop",
+        "title": "<b>Concept:</b> Layer 5:\nAgent loop<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer6",
+        "label": "Layer 6:\nMemory",
+        "title": "<b>Concept:</b> Layer 6:\nMemory<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer7",
+        "label": "Layer 7:\nSubagents",
+        "title": "<b>Concept:</b> Layer 7:\nSubagents<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer8",
+        "label": "Layer 8:\nOrchestration",
+        "title": "<b>Concept:</b> Layer 8:\nOrchestration<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer9",
+        "label": "Layer 9:\nVerification",
+        "title": "<b>Concept:</b> Layer 9:\nVerification<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "layer10",
+        "label": "Layer 10:\nInterface",
+        "title": "<b>Concept:</b> Layer 10:\nInterface<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "substrate_unchanged",
+        "label": "Substrate unchanged\n(agents are guests)",
+        "title": "<b>Concept:</b> Substrate unchanged\n(agents are guests)<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "model_metaphor",
+        "label": "Fallible junior colleague\n(∞ speed, 0 memory)",
+        "title": "<b>Concept:</b> Fallible junior colleague\n(∞ speed, 0 memory)<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "model_risk",
+        "label": "Non-deterministic &\nconfidently wrong",
+        "title": "<b>Concept:</b> Non-deterministic &amp;\nconfidently wrong<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "model_rule",
+        "label": "Never trust directly",
+        "title": "<b>Concept:</b> Never trust directly<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "prompt_metaphor",
+        "label": "Ephemeral program\n(probabilistic VM)",
+        "title": "<b>Concept:</b> Ephemeral program\n(probabilistic VM)<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "prompt_rule",
+        "label": "Treat prompts as code",
+        "title": "<b>Concept:</b> Treat prompts as code<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "prompt_risk",
+        "label": "Prompt drift &\nauthority leakage",
+        "title": "<b>Concept:</b> Prompt drift &amp;\nauthority leakage<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "context_metaphor",
+        "label": "Working memory\n(RAM)",
+        "title": "<b>Concept:</b> Working memory\n(RAM)<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "context_risk",
+        "label": "Poisoning, eviction,\norder sensitivity",
+        "title": "<b>Concept:</b> Poisoning, eviction,\norder sensitivity<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "context_rule",
+        "label": "Too much context\ncan degrade",
+        "title": "<b>Concept:</b> Too much context\ncan degrade<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "tools_metaphor",
+        "label": "Determinism anchors\n(escape to reality)",
+        "title": "<b>Concept:</b> Determinism anchors\n(escape to reality)<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "tools_rule",
+        "label": "Prefer tools for\n deterministic tasks",
+        "title": "<b>Concept:</b> Prefer tools for\n deterministic tasks<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "tools_risk",
+        "label": "Tool hallucination\n(wrong calls)",
+        "title": "<b>Concept:</b> Tool hallucination\n(wrong calls)<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "loop_metaphor",
+        "label": "Controller loop",
+        "title": "<b>Concept:</b> Controller loop<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "loop_steps",
+        "label": "Observe → Decide →\nAct → Update",
+        "title": "<b>Concept:</b> Observe → Decide →\nAct → Update<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "loop_rule",
+        "label": "Loop defines\nan agent",
+        "title": "<b>Concept:</b> Loop defines\nan agent<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "memory_metaphor",
+        "label": "State persistence",
+        "title": "<b>Concept:</b> State persistence<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "memory_risk",
+        "label": "Write-only liability\n(error reinforcement)",
+        "title": "<b>Concept:</b> Write-only liability\n(error reinforcement)<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "memory_rule",
+        "label": "Audit & prune",
+        "title": "<b>Concept:</b> Audit &amp; prune<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "subagents_metaphor",
+        "label": "Role decomposition",
+        "title": "<b>Concept:</b> Role decomposition<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "subagents_rule",
+        "label": "Enables cross-checking",
+        "title": "<b>Concept:</b> Enables cross-checking<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "subagents_note",
+        "label": "Usually 2–4 agents",
+        "title": "<b>Concept:</b> Usually 2–4 agents<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "orchestration_metaphor",
+        "label": "Graph, not chain",
+        "title": "<b>Concept:</b> Graph, not chain<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "orchestration_rule",
+        "label": "Retry & escalation",
+        "title": "<b>Concept:</b> Retry &amp; escalation<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "orchestration_pattern",
+        "label": "Planner → Executor → Checker",
+        "title": "<b>Concept:</b> Planner → Executor → Checker<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "verification_metaphor",
+        "label": "External checks",
+        "title": "<b>Concept:</b> External checks<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "verification_schema",
+        "label": "Schema validation",
+        "title": "<b>Concept:</b> Schema validation<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "verification_hitl",
+        "label": "Human-in-the-loop",
+        "title": "<b>Concept:</b> Human-in-the-loop<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "interface_metaphor",
+        "label": "Friction reduction",
+        "title": "<b>Concept:</b> Friction reduction<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "interface_components",
+        "label": "IDE plugins,\ncommands, MCP, LSP",
+        "title": "<b>Concept:</b> IDE plugins,\ncommands, MCP, LSP<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "instincts_mapping",
+        "label": "Old instincts →\nNew equivalents",
+        "title": "<b>Concept:</b> Old instincts →\nNew equivalents<br><i>Drag to position, double-click to release.</i>",
+        "size": 22
+      },
+      {
+        "id": "type_safety",
+        "label": "Type safety",
+        "title": "<b>Concept:</b> Type safety<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "schema_validation",
+        "label": "Schema + output\nvalidation",
+        "title": "<b>Concept:</b> Schema + output\nvalidation<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "unit_tests",
+        "label": "Unit tests",
+        "title": "<b>Concept:</b> Unit tests<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "prompt_regression",
+        "label": "Prompt + agent\nregression tests",
+        "title": "<b>Concept:</b> Prompt + agent\nregression tests<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "observability",
+        "label": "Observability",
+        "title": "<b>Concept:</b> Observability<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "decision_logs",
+        "label": "Prompt/context/\ndecision logs",
+        "title": "<b>Concept:</b> Prompt/context/\ndecision logs<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "code_reviews",
+        "label": "Code reviews",
+        "title": "<b>Concept:</b> Code reviews<br><i>Drag to position, double-click to release.</i>"
+      },
+      {
+        "id": "critic_reviewer",
+        "label": "Critic/reviewer\nagents",
+        "title": "<b>Concept:</b> Critic/reviewer\nagents<br><i>Drag to position, double-click to release.</i>"
+      }
+    ]);
+    const edges = new vis.DataSet([
+      {
+        "from": "agent_stack",
+        "to": "core_reframe",
+        "label": "anchored by",
+        "title": "<b>Relationship:</b> anchored by"
+      },
+      {
+        "from": "core_reframe",
+        "to": "manages_thinking",
+        "label": "defines",
+        "title": "<b>Relationship:</b> defines"
+      },
+      {
+        "from": "core_reframe",
+        "to": "key_question",
+        "label": "focuses on",
+        "title": "<b>Relationship:</b> focuses on"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer0",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer1",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer2",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer3",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer4",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer5",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer6",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer7",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer8",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer9",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "layer10",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "key_question",
+        "to": "layer1",
+        "label": "invokes",
+        "title": "<b>Relationship:</b> invokes"
+      },
+      {
+        "from": "key_question",
+        "to": "layer2",
+        "label": "constrains via",
+        "title": "<b>Relationship:</b> constrains via"
+      },
+      {
+        "from": "key_question",
+        "to": "layer3",
+        "label": "uses",
+        "title": "<b>Relationship:</b> uses"
+      },
+      {
+        "from": "key_question",
+        "to": "layer4",
+        "label": "grounds with",
+        "title": "<b>Relationship:</b> grounds with"
+      },
+      {
+        "from": "key_question",
+        "to": "layer9",
+        "label": "requires",
+        "title": "<b>Relationship:</b> requires"
+      },
+      {
+        "from": "agent_stack",
+        "to": "stack_sentence",
+        "label": "summarized by",
+        "title": "<b>Relationship:</b> summarized by"
+      },
+      {
+        "from": "stack_sentence",
+        "to": "deterministic_control",
+        "label": "describes",
+        "title": "<b>Relationship:</b> describes"
+      },
+      {
+        "from": "deterministic_control",
+        "to": "layer1",
+        "label": "selectively invokes",
+        "title": "<b>Relationship:</b> selectively invokes"
+      },
+      {
+        "from": "deterministic_control",
+        "to": "layer3",
+        "label": "constrains",
+        "title": "<b>Relationship:</b> constrains"
+      },
+      {
+        "from": "deterministic_control",
+        "to": "layer4",
+        "label": "grounds with",
+        "title": "<b>Relationship:</b> grounds with"
+      },
+      {
+        "from": "deterministic_control",
+        "to": "layer7",
+        "label": "decomposes into",
+        "title": "<b>Relationship:</b> decomposes into"
+      },
+      {
+        "from": "deterministic_control",
+        "to": "layer9",
+        "label": "verifies via",
+        "title": "<b>Relationship:</b> verifies via"
+      },
+      {
+        "from": "deterministic_control",
+        "to": "layer6",
+        "label": "persists (auditable)",
+        "title": "<b>Relationship:</b> persists (auditable)"
+      },
+      {
+        "from": "layer0",
+        "to": "substrate_unchanged",
+        "label": "remains",
+        "title": "<b>Relationship:</b> remains"
+      },
+      {
+        "from": "layer1",
+        "to": "model_metaphor",
+        "label": "modeled as",
+        "title": "<b>Relationship:</b> modeled as"
+      },
+      {
+        "from": "layer1",
+        "to": "model_risk",
+        "label": "exhibits",
+        "title": "<b>Relationship:</b> exhibits"
+      },
+      {
+        "from": "layer1",
+        "to": "model_rule",
+        "label": "implies",
+        "title": "<b>Relationship:</b> implies"
+      },
+      {
+        "from": "layer2",
+        "to": "prompt_metaphor",
+        "label": "modeled as",
+        "title": "<b>Relationship:</b> modeled as"
+      },
+      {
+        "from": "layer2",
+        "to": "prompt_rule",
+        "label": "treat as",
+        "title": "<b>Relationship:</b> treat as"
+      },
+      {
+        "from": "layer2",
+        "to": "prompt_risk",
+        "label": "risks",
+        "title": "<b>Relationship:</b> risks"
+      },
+      {
+        "from": "layer3",
+        "to": "context_metaphor",
+        "label": "modeled as",
+        "title": "<b>Relationship:</b> modeled as"
+      },
+      {
+        "from": "layer3",
+        "to": "context_risk",
+        "label": "risks",
+        "title": "<b>Relationship:</b> risks"
+      },
+      {
+        "from": "layer3",
+        "to": "context_rule",
+        "label": "limited by",
+        "title": "<b>Relationship:</b> limited by"
+      },
+      {
+        "from": "layer4",
+        "to": "tools_metaphor",
+        "label": "acts as",
+        "title": "<b>Relationship:</b> acts as"
+      },
+      {
+        "from": "layer4",
+        "to": "tools_rule",
+        "label": "prefers",
+        "title": "<b>Relationship:</b> prefers"
+      },
+      {
+        "from": "layer4",
+        "to": "tools_risk",
+        "label": "risks",
+        "title": "<b>Relationship:</b> risks"
+      },
+      {
+        "from": "layer5",
+        "to": "loop_metaphor",
+        "label": "modeled as",
+        "title": "<b>Relationship:</b> modeled as"
+      },
+      {
+        "from": "layer5",
+        "to": "loop_steps",
+        "label": "executes",
+        "title": "<b>Relationship:</b> executes"
+      },
+      {
+        "from": "layer5",
+        "to": "loop_rule",
+        "label": "defined by",
+        "title": "<b>Relationship:</b> defined by"
+      },
+      {
+        "from": "layer6",
+        "to": "memory_metaphor",
+        "label": "implements",
+        "title": "<b>Relationship:</b> implements"
+      },
+      {
+        "from": "layer6",
+        "to": "memory_risk",
+        "label": "risks",
+        "title": "<b>Relationship:</b> risks"
+      },
+      {
+        "from": "layer6",
+        "to": "memory_rule",
+        "label": "requires",
+        "title": "<b>Relationship:</b> requires"
+      },
+      {
+        "from": "layer7",
+        "to": "subagents_metaphor",
+        "label": "enables",
+        "title": "<b>Relationship:</b> enables"
+      },
+      {
+        "from": "layer7",
+        "to": "subagents_rule",
+        "label": "supports",
+        "title": "<b>Relationship:</b> supports"
+      },
+      {
+        "from": "layer7",
+        "to": "subagents_note",
+        "label": "typically uses",
+        "title": "<b>Relationship:</b> typically uses"
+      },
+      {
+        "from": "layer8",
+        "to": "orchestration_metaphor",
+        "label": "structured as",
+        "title": "<b>Relationship:</b> structured as"
+      },
+      {
+        "from": "layer8",
+        "to": "orchestration_rule",
+        "label": "supports",
+        "title": "<b>Relationship:</b> supports"
+      },
+      {
+        "from": "layer8",
+        "to": "orchestration_pattern",
+        "label": "uses pattern",
+        "title": "<b>Relationship:</b> uses pattern"
+      },
+      {
+        "from": "layer9",
+        "to": "verification_metaphor",
+        "label": "provides",
+        "title": "<b>Relationship:</b> provides"
+      },
+      {
+        "from": "layer9",
+        "to": "verification_schema",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "layer9",
+        "to": "verification_hitl",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "layer10",
+        "to": "interface_metaphor",
+        "label": "aims for",
+        "title": "<b>Relationship:</b> aims for"
+      },
+      {
+        "from": "layer10",
+        "to": "interface_components",
+        "label": "includes",
+        "title": "<b>Relationship:</b> includes"
+      },
+      {
+        "from": "agent_stack",
+        "to": "instincts_mapping",
+        "label": "connects to",
+        "title": "<b>Relationship:</b> connects to"
+      },
+      {
+        "from": "instincts_mapping",
+        "to": "type_safety",
+        "label": "maps",
+        "title": "<b>Relationship:</b> maps"
+      },
+      {
+        "from": "type_safety",
+        "to": "schema_validation",
+        "label": "evolves into",
+        "title": "<b>Relationship:</b> evolves into"
+      },
+      {
+        "from": "instincts_mapping",
+        "to": "unit_tests",
+        "label": "maps",
+        "title": "<b>Relationship:</b> maps"
+      },
+      {
+        "from": "unit_tests",
+        "to": "prompt_regression",
+        "label": "evolves into",
+        "title": "<b>Relationship:</b> evolves into"
+      },
+      {
+        "from": "instincts_mapping",
+        "to": "observability",
+        "label": "maps",
+        "title": "<b>Relationship:</b> maps"
+      },
+      {
+        "from": "observability",
+        "to": "decision_logs",
+        "label": "evolves into",
+        "title": "<b>Relationship:</b> evolves into"
+      },
+      {
+        "from": "instincts_mapping",
+        "to": "code_reviews",
+        "label": "maps",
+        "title": "<b>Relationship:</b> maps"
+      },
+      {
+        "from": "code_reviews",
+        "to": "critic_reviewer",
+        "label": "evolves into",
+        "title": "<b>Relationship:</b> evolves into"
+      }
+    ]);
+
+    // --- Network init
+    const container = document.getElementById("map");
+    const data = { nodes, edges };
+
+    const options = {
+      nodes: {
+        shape: "dot",
+        color: {
+          border: "#4285F4",
+          background: "#ffffff",
+          highlight: { border: "#34A853", background: "#e6f4ea" }
+        },
+        font: { size: 14, color: "#3c4043" },
+        borderWidth: 2,
+        size: 20
+      },
+      edges: {
+        color: { color: "#dee2e6", highlight: "#34A853" },
+        arrows: { to: { enabled: true, scaleFactor: 0.7 } },
+        font: { align: "middle", size: 12, color: "#5f6368" },
+        width: 2,
+        smooth: {
+          enabled: true,
+          type: "dynamic"
+        }
+      },
+      physics: {
+        solver: "forceAtlas2Based",
+        forceAtlas2Based: {
+          gravitationalConstant: -50,
+          centralGravity: 0.005,
+          springLength: 100,
+          springConstant: 0.18
+        },
+        maxVelocity: 146,
+        minVelocity: 0.1,
+        stabilization: { iterations: 150 }
+      },
+      interaction: {
+        hover: true,
+        tooltipDelay: 120,
+        multiselect: true,
+        navigationButtons: true,
+        keyboard: true
+      }
+    };
+
+    const network = new vis.Network(container, data, options);
+
+    // --- Interactivity
+    // Fix node on drag end
+    network.on("dragEnd", (params) => {
+      if (params.nodes.length > 0) {
+        const id = params.nodes[0];
+        nodes.update({ id, fixed: { x: true, y: true } });
+      }
+    });
+
+    // Release node on double click
+    network.on("doubleClick", (params) => {
+      if (params.nodes.length > 0) {
+        const id = params.nodes[0];
+        nodes.update({ id, fixed: { x: false, y: false } });
+      }
+    });
+  </script>
+</body>
+
+</html>
