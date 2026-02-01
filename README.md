@@ -2,7 +2,7 @@
 
 **An interactive visualization of the 10-layer architecture for reliable AI agents.**
 
-[**🔴 Live Demo**](https://github.com/ai-agents-cybersecurity/agent-stack/mapa_agent_stack.html)) 
+[**🔴 Live Demo**](https://ai-agents-cybersecurity.github.io/agent-stack/)
 
 ---
 
